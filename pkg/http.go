@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -32,7 +31,6 @@ func init() {
 
 func rootPage(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Welcom to the Go Api Server")
-	fmt.Println("Root endpoint is hooked!")
 }
 
 func getAllHomework(w http.ResponseWriter, r *http.Request) {
@@ -46,30 +44,28 @@ func getSingleFetchHomework(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-type", "application/json")
 
 	for _, person := range persons {
-		fmt.Println(person.Id)
 		if strings.Contains(person.Id, key) {
 			json.NewEncoder(w).Encode(person)
 		}
 	}
+	fmt.Fprintln(w, "Not Found\nMaybe you input the wrong key.")
 }
 
 func setHomework(w http.ResponseWriter, r *http.Request) {
 	resp, _ := ioutil.ReadAll(r.Body)
 	var person Homework
 	if err := json.Unmarshal(resp, &person); err != nil {
-		log.Fatal(err)
+		http.Error(w, "json parsing error", 400)
 	}
-
 	persons = append(persons, &person)
 	json.NewEncoder(w).Encode(person)
 }
 
-func StartServer() error {
+func StartServer() *mux.Router {
 	router := mux.NewRouter()
 	router.HandleFunc("/", rootPage)
 	router.HandleFunc("/getSingleFetchHomework/{key}", getSingleFetchHomework).Methods("GET")
-	router.HandleFunc("/getAllHomework", getAllHomework).Methods("GET")
-	router.HandleFunc("/setHomework", setHomework).Methods("POST")
-
-	return http.ListenAndServe(fmt.Sprintf(":%d", 8080), router)
+	router.HandleFunc("/homework", getAllHomework).Methods("GET")
+	router.HandleFunc("/homework", setHomework).Methods("POST")
+	return router
 }
