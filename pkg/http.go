@@ -40,16 +40,15 @@ func getAllHomework(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(persons)
 }
 
-func getSingleHomework(w http.ResponseWriter, r *http.Request) {
-	// vars := mux.Vars(r)
-	// key := vars["id"]
+func getSingleFetchHomework(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	key := vars["key"]
 	w.Header().Set("Content-type", "application/json")
-	log.Println("草")
 
 	for _, person := range persons {
 		fmt.Println(person.Id)
-		if strings.Contains(person.Id, "32") {
-			json.NewEncoder(w).Encode(persons)
+		if strings.Contains(person.Id, key) {
+			json.NewEncoder(w).Encode(person)
 		}
 	}
 }
@@ -68,7 +67,7 @@ func setHomework(w http.ResponseWriter, r *http.Request) {
 func StartServer() error {
 	router := mux.NewRouter()
 	router.HandleFunc("/", rootPage)
-	router.HandleFunc("/getSingleHomework", getSingleHomework).Methods("GET")
+	router.HandleFunc("/getSingleFetchHomework/{key}", getSingleFetchHomework).Methods("GET")
 	router.HandleFunc("/getAllHomework", getAllHomework).Methods("GET")
 	router.HandleFunc("/setHomework", setHomework).Methods("POST")
 
