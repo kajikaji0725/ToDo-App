@@ -56,6 +56,7 @@ func setHomework(w http.ResponseWriter, r *http.Request) {
 	var person Homework
 	if err := json.Unmarshal(resp, &person); err != nil {
 		http.Error(w, "json parsing error", 400)
+		return
 	}
 	persons = append(persons, &person)
 	json.NewEncoder(w).Encode(person)
@@ -64,7 +65,7 @@ func setHomework(w http.ResponseWriter, r *http.Request) {
 func StartServer() *mux.Router {
 	router := mux.NewRouter()
 	router.HandleFunc("/", rootPage)
-	router.HandleFunc("/getSingleFetchHomework/{key}", getSingleFetchHomework).Methods("GET")
+	router.HandleFunc("/homework/{key}", getSingleFetchHomework).Methods("GET")
 	router.HandleFunc("/homework", getAllHomework).Methods("GET")
 	router.HandleFunc("/homework", setHomework).Methods("POST")
 	return router
