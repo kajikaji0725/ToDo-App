@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -17,10 +18,10 @@ type Homework struct {
 	Date    time.Time `json:"date"`
 }
 
-var persons []*Homework
+var homeworks []*Homework
 
 func init() {
-	persons = []*Homework{
+	homeworks = []*Homework{
 		&Homework{
 			Id:      "1",
 			Subject: "信号処理基礎",
@@ -33,19 +34,20 @@ func rootPage(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Welcom to the Go Api Server")
 }
 
-func getAllHomework(w http.ResponseWriter, r *http.Request) {
+func fetchAllHomework(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-type", "application/json")
-	json.NewEncoder(w).Encode(persons)
+	json.NewEncoder(w).Encode(homeworks)
 }
 
-func getSingleFetchHomework(w http.ResponseWriter, r *http.Request) {
+func fetchSinglehHomework(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	key := vars["key"]
+	id := vars["id"]
 	w.Header().Set("Content-type", "application/json")
 
-	for _, person := range persons {
-		if strings.Contains(person.Id, key) {
-			json.NewEncoder(w).Encode(person)
+	for _, homework := range homeworks {
+		if strings.Contains(homework.Id, id) {
+			json.NewEncoder(w).Encode(homework)
+			return
 		}
 	}
 	fmt.Fprintln(w, "Not Found\nMaybe you input the wrong key.")
@@ -53,20 +55,61 @@ func getSingleFetchHomework(w http.ResponseWriter, r *http.Request) {
 
 func setHomework(w http.ResponseWriter, r *http.Request) {
 	resp, _ := ioutil.ReadAll(r.Body)
-	var person Homework
-	if err := json.Unmarshal(resp, &person); err != nil {
+	log.Println(string(resp))
+	var setHomework Homework
+	if err := json.Unmarshal(resp, &setHomework); err != nil {
 		http.Error(w, "json parsing error", 400)
 		return
 	}
-	persons = append(persons, &person)
-	json.NewEncoder(w).Encode(person)
+	fmt.Println(setHomework)
+	homeworks = append(homeworks, &setHomework)
+	json.NewEncoder(w).Encode(homeworks)
+}
+
+func deleteHomework(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id := vars["id"]
+
+	for i, homework := range homeworks {
+		if strings.Contains(homework.Id, id) {
+			homeworks = append(homeworks[:i], homeworks[i+1:]...)
+			fmt.Fprintf(w, "Id number %s has been deleted", id)
+			return
+		}
+	}
+}
+
+func updateHomework(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id := vars["id"]
+
+	resp, _ := ioutil.ReadAll(r.Body)
+	var updateHomework Homework
+	if err := json.Unmarshal(resp, &updateHomework); err != nil {
+		http.Error(w, "json parsing error", 400)
+		return
+	}
+
+	for i, homework := range homeworks {
+		if strings.Contains(homework.Id, id) {
+			homeworks[i] = &Homework{
+				Id:      homework.Id,
+				Subject: updateHomework.Subject,
+				Date:    updateHomework.Date,
+			}
+			fmt.Fprintf(w, "Id number %s has been updated", id)
+			return
+		}
+	}
 }
 
 func StartServer() *mux.Router {
 	router := mux.NewRouter()
 	router.HandleFunc("/", rootPage)
-	router.HandleFunc("/homework/{key}", getSingleFetchHomework).Methods("GET")
-	router.HandleFunc("/homework", getAllHomework).Methods("GET")
+	router.HandleFunc("/homework/{id}", fetchSinglehHomework).Methods("GET")
+	router.HandleFunc("/homework", fetchAllHomework).Methods("GET")
 	router.HandleFunc("/homework", setHomework).Methods("POST")
+	router.HandleFunc("/homework/{id}", deleteHomework).Methods("DELETE")
+	router.HandleFunc("/homework/{id}", updateHomework).Methods("PUT")
 	return router
 }
