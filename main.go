@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	if err := http.ListenAndServe(fmt.Sprintf(":%d", 8080), pkg.StartServer()); err != nil {
+	if err := http.ListenAndServe(fmt.Sprintf(":%d", 8080), pkg.NewRouter()); err != nil {
 		log.Fatal(err)
 	}
 }
