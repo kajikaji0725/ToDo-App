@@ -11,13 +11,13 @@ import (
 	"github.com/gorilla/mux"
 )
 
-type Homework struct {
+type ToDo struct {
 	Id      string    `json:"id"`
 	Subject string    `json:"subject"`
 	Date    time.Time `json:"date"`
 }
 
-var homeworks []Homework
+var homeworks []ToDo
 
 func fetchAllHomework(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-type", "application/json")
@@ -41,7 +41,7 @@ func fetchSinglehHomework(w http.ResponseWriter, r *http.Request) {
 func setHomework(w http.ResponseWriter, r *http.Request) {
 	resp, _ := ioutil.ReadAll(r.Body)
 	log.Println(string(resp))
-	var homework Homework
+	var homework ToDo
 	if err := json.Unmarshal(resp, &homework); err != nil {
 		http.Error(w, "json parsing error", http.StatusBadRequest)
 		return
@@ -70,18 +70,18 @@ func updateHomework(w http.ResponseWriter, r *http.Request) {
 	id := vars["id"]
 
 	resp, _ := ioutil.ReadAll(r.Body)
-	var updatehomework Homework
-	if err := json.Unmarshal(resp, &updatehomework); err != nil {
+	var updatedhomework ToDo
+	if err := json.Unmarshal(resp, &updatedhomework); err != nil {
 		http.Error(w, "json parsing error", 400)
 		return
 	}
 
 	for i, homework := range homeworks {
 		if homework.Id == id {
-			homeworks[i] = Homework{
+			homeworks[i] = ToDo{
 				Id:      homework.Id,
-				Subject: updatehomework.Subject,
-				Date:    updatehomework.Date,
+				Subject: updatedhomework.Subject,
+				Date:    updatedhomework.Date,
 			}
 			fmt.Fprintf(w, "Id number %s has been updated", id)
 			return
