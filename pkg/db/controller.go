@@ -2,7 +2,6 @@ package db
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/kajikaji0725/ToDo-App/pkg/db/model"
 	"gorm.io/driver/postgres"
@@ -55,17 +54,25 @@ func NewContoroller() (*Contoroller, error) {
 	return &Contoroller{db}, nil
 }
 
-func (contoroller *Contoroller) SetHomework(toDo model.ToDo) error {
-	log.Println("111111111111111111111111111")
+func DBContoroller(toDo model.ToDo, methods string) error {
+	db, err := NewContoroller()
+	if err != nil {
+		return err
+	}
+	switch methods {
+	case "POST":
+		db.SetDBHomework(toDo)
+	}
+
+	return nil
+}
+
+func (contoroller *Contoroller) SetDBHomework(toDo model.ToDo) error {
 	homework := model.Homework{}
 	homework.ID = 1
 	homework.Homework.Id = toDo.Id
 	homework.Homework.Subject = toDo.Subject
 	homework.Homework.Date = toDo.Date
-	log.Println("111111111111111111111111111")
 	contoroller.contoroller.Create(&homework)
-	if err := contoroller.contoroller.Create(&homework).Error; err != nil {
-		log.Print(err)
-	}
 	return nil
 }
