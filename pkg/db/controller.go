@@ -56,6 +56,7 @@ func NewContoroller() (*Contoroller, error) {
 }
 
 func (contoroller *Contoroller) SetHomework(toDo model.ToDo) error {
+	log.Println("111111111111111111111111111")
 	homework := model.Homework{}
 	homework.ID = 1
 	homework.Homework.Id = toDo.Id
@@ -63,5 +64,8 @@ func (contoroller *Contoroller) SetHomework(toDo model.ToDo) error {
 	homework.Homework.Date = toDo.Date
 	log.Println("111111111111111111111111111")
 	contoroller.contoroller.Create(&homework)
+	if err := contoroller.contoroller.Create(&homework).Error; err != nil {
+		log.Print(err)
+	}
 	return nil
 }

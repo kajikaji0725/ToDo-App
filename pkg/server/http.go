@@ -74,7 +74,9 @@ func (dbContoroller *Contoroller) setHomework(w http.ResponseWriter, r *http.Req
 		http.Error(w, "json parsing error", http.StatusBadRequest)
 		return
 	}
+	log.Println("111111111111111111111111111")
 	err := dbContoroller.SetHomework(homework)
+	log.Println("111111111111111111111111111")
 	if err != nil {
 		http.Error(w, "worning", http.StatusBadRequest)
 		return
