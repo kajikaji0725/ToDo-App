@@ -1,15 +1,19 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 
-	"github.com/kajikaji0725/ToDo-App/pkg"
+	"github.com/kajikaji0725/ToDo-App/pkg/server"
 )
 
 func main() {
-	if err := http.ListenAndServe(fmt.Sprintf(":%d", 8080), pkg.NewRouter()); err != nil {
+	router, err := server.NewRouter()
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+	if err := http.ListenAndServe(":8080", router); err != nil {
 		log.Fatal(err)
 	}
 }

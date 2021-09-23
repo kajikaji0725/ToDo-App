@@ -1,4 +1,4 @@
-package pkg
+package server
 
 import (
 	"encoding/json"
@@ -6,20 +6,48 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/kajikaji0725/ToDo-App/pkg/db"
+	"github.com/kajikaji0725/ToDo-App/pkg/db/model"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
-type ToDo struct {
-	Id      string    `json:"id"`
-	Subject string    `json:"subject"`
-	Date    time.Time `json:"date"`
+type Contoroller struct {
+	Contoroller *gorm.DB
 }
 
-var homeworks []ToDo
+var homeworks []model.ToDo
 
-func fetchAllHomework(w http.ResponseWriter, r *http.Request) {
+func NewContoroller() (*Contoroller, error) {
+	config := db.Config{
+		Host:     "homework-db",
+		Username: "root",
+		Password: "root",
+		DBname:   "root",
+		Port:     "5432",
+	}
+
+	db, err := gorm.Open(postgres.Open(db.Dsn(config)), &gorm.Config{})
+	if err != nil {
+		return nil, err
+	}
+
+	err = db.AutoMigrate(
+		&model.Homework{},
+	)
+	if err != nil {
+		return nil, err
+	}
+	return &Contoroller{db}, nil
+}
+
+func (contoroller *Contoroller) SetHomework(toDo model.ToDo) error {
+	return nil
+}
+
+func (contoeroller *Contoroller) fetchAllHomework(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-type", "application/json")
 	json.NewEncoder(w).Encode(homeworks)
 }
@@ -38,15 +66,19 @@ func fetchSinglehHomework(w http.ResponseWriter, r *http.Request) {
 	http.Error(w, "Not Found\nMaybe you input the wrong key.", http.StatusBadRequest)
 }
 
-func setHomework(w http.ResponseWriter, r *http.Request) {
+func (dbContoroller *Contoroller) setHomework(w http.ResponseWriter, r *http.Request) {
 	resp, _ := ioutil.ReadAll(r.Body)
 	log.Println(string(resp))
-	var homework ToDo
+	var homework model.ToDo
 	if err := json.Unmarshal(resp, &homework); err != nil {
 		http.Error(w, "json parsing error", http.StatusBadRequest)
 		return
 	}
-	fmt.Println(homework)
+	err := dbContoroller.SetHomework(homework)
+	if err != nil {
+		http.Error(w, "worning", http.StatusBadRequest)
+		return
+	}
 	homeworks = append(homeworks, homework)
 	json.NewEncoder(w).Encode(homeworks)
 }
@@ -70,7 +102,7 @@ func updateHomework(w http.ResponseWriter, r *http.Request) {
 	id := vars["id"]
 
 	resp, _ := ioutil.ReadAll(r.Body)
-	var updatedhomework ToDo
+	var updatedhomework model.ToDo
 	if err := json.Unmarshal(resp, &updatedhomework); err != nil {
 		http.Error(w, "json parsing error", 400)
 		return
@@ -78,7 +110,7 @@ func updateHomework(w http.ResponseWriter, r *http.Request) {
 
 	for i, homework := range homeworks {
 		if homework.Id == id {
-			homeworks[i] = ToDo{
+			homeworks[i] = model.ToDo{
 				Id:      homework.Id,
 				Subject: updatedhomework.Subject,
 				Date:    updatedhomework.Date,
@@ -90,12 +122,16 @@ func updateHomework(w http.ResponseWriter, r *http.Request) {
 	http.Error(w, "Not Found\nMaybe you input the wrong key.", http.StatusBadRequest)
 }
 
-func NewRouter() *mux.Router {
+func NewRouter() (*mux.Router, error) {
 	router := mux.NewRouter()
+	contoroller, err := NewContoroller()
+	if err != nil {
+		return nil, err
+	}
 	router.HandleFunc("/todo/{id}", fetchSinglehHomework).Methods("GET")
-	router.HandleFunc("/todo", fetchAllHomework).Methods("GET")
-	router.HandleFunc("/todo", setHomework).Methods("POST")
+	router.HandleFunc("/todo", contoroller.fetchAllHomework).Methods("GET")
+	router.HandleFunc("/todo", contoroller.setHomework).Methods("POST")
 	router.HandleFunc("/todo/{id}", deleteHomework).Methods("DELETE")
 	router.HandleFunc("/todo/{id}", updateHomework).Methods("PUT")
-	return router
+	return router, nil
 }
