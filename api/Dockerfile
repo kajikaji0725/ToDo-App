@@ -7,7 +7,7 @@ COPY . .
 RUN \
     CGO_ENABLED=0 \
     GOOS=linux \
-    go build -mod=vendor -o app ./
+    go build -mod=vendor -o app ./api
 
 FROM ubuntu:20.04
 

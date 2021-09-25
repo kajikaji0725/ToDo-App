@@ -3,11 +3,9 @@ services:
   api:
     build:
       context: .
-      dockerfile: ./Dockerfile
+      dockerfile: ./api/Dockerfile
     container_name: homework-api
     restart: always
-    environment:
-      - CRYPTO_KEY=passw0rdpassw0rdpassw0rdpassw0rd
     depends_on:
       - db
     ports:
