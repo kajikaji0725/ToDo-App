@@ -42,7 +42,7 @@ func (api *ApiClient) fetchSinglehHomework(w http.ResponseWriter, r *http.Reques
 	w.Header().Set("Content-type", "application/json")
 	homework, err := api.db.FetchDBSingleHomework(id)
 	if err != nil {
-		http.Error(w, "Warning!!\nThis Id number couldn't be deleted\nThere is a possibility that the id you entered is wrong.\nPlease check the id ", http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	json.NewEncoder(w).Encode(homework)
@@ -55,13 +55,13 @@ func (api *ApiClient) setHomework(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "json parsing error", http.StatusBadRequest)
 		return
 	}
-	err := api.db.SetDBHomework(homework)
+	err := api.db.SetDBHomework(&homework)
 	if err != nil {
 		log.Println(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	json.NewEncoder(w).Encode(homework)
+	json.NewEncoder(w).Encode(&homework)
 }
 
 func (api *ApiClient) deleteHomework(w http.ResponseWriter, r *http.Request) {
@@ -70,7 +70,7 @@ func (api *ApiClient) deleteHomework(w http.ResponseWriter, r *http.Request) {
 
 	err := api.db.DeleteDBHomework(id)
 	if err != nil {
-		http.Error(w, "Warning!!\nThis Id number couldn't be deleted\nThere is a possibility that the id you entered is wrong.\nPlease check the id ", http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	fmt.Fprintf(w, "Id number %s has been deleted", id)
@@ -85,9 +85,9 @@ func (api *ApiClient) updateHomework(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "json parsing error", 400)
 		return
 	}
-	err := api.db.UpdateDBHomework(homework, id)
+	err := api.db.UpdateDBHomework(&homework, id)
 	if err != nil {
-		http.Error(w, "Warning!!\nThis Id number couldn't be updated\nThere is a possibility that the id you entered is wrong.\nPlease check the id ", http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	fmt.Fprintf(w, "Id number %s has been updated", id)

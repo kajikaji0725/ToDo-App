@@ -90,7 +90,7 @@ func (controller *Controller) FetchDBSingleHomework(id string) (*model.Homework,
 	return &homework , nil
 }
 
-func (controller *Controller) SetDBHomework(toDo model.ToDo) error {
+func (controller *Controller) SetDBHomework(toDo *model.ToDo) error {
 	homework := model.Homework{}
 	err := controller.db.Model(&homework).Create(map[string]interface{}{"homework_id": toDo.Id, "homework_subject": toDo.Subject, "homework_date": toDo.Date}).Error
 	if err != nil {
@@ -103,16 +103,16 @@ func (controller *Controller) DeleteDBHomework(id string) error {
 	homework := model.Homework{}
 	err := controller.db.First(&homework, "homework_id = ?", id).Delete(&homework)
 	if err.RowsAffected == 0 {
-		return errors.New("")
+		return errors.New("Warning!!\nThis Id number couldn't be deleted\nThere is a possibility that the id you entered is wrong.\nPlease check the id ")
 	}
 	return nil
 }
 
-func (controller *Controller) UpdateDBHomework(toDo model.ToDo, id string) error {
+func (controller *Controller) UpdateDBHomework(toDo *model.ToDo, id string) error {
 	homework := model.Homework{}
 	err := controller.db.Model(&homework).Where("homework_id = ?", id).Updates(map[string]interface{}{"homework_id": toDo.Id, "homework_subject": toDo.Subject, "homework_date": toDo.Date})
 	if err.RowsAffected == 0 {
-		return errors.New("")
+		return errors.New("Warning!!\nThis Id number couldn't be updated\nThere is a possibility that the id you entered is wrong.\nPlease check the id ")
 	}
 	return nil
 }
