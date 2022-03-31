@@ -1,21 +1,21 @@
 import { FC, useState, useEffect } from 'react';
+import proxy from 'http-proxy-middleware'
 import axis from 'axios';
 import { SampleType } from './interface';
 
 const Sample: FC = () => {
+  
   const [info, setInfo] = useState<SampleType[]>([]);
   const datas: SampleType[] = [];
   console.log(axis.defaults.baseURL);
-  const axios = axis.create({baseURL: "localhost:8081"})
+  const axios = axis.create({baseURL: "http://localhost:8081"})
   delete axios.defaults.headers.common["X-Requested-With"];
 
-  console.log(axios)
+  console.log(axis)
   useEffect(() => {
     const getSampleData = () => {
       axios
-        .get("/todo",{
-          // withCredentials: true
-        })  // GETメソッドを呼び出す
+        .get("/todo")// GETメソッドを呼び出す
         .then((res) => {  // レスポンスを受け取ったらthenを実行する
           // GETで取得したデータをforEachでループしてStateにセットする
           // res.data.forEach((resData:SampleType) => {
@@ -24,13 +24,14 @@ const Sample: FC = () => {
           //   };
           //   datas.push(data);
           // });
-          console.log(res.data)
+          console.log(res)
+          console.log(res.data);
           // for(let i=0; i<res.data.length;i++ ){
           //   const data:SampleType= {
           //     message: res[i].data["message"];
           //   }
           // }
-          setInfo(datas);
+          // setInfo(datas);
         })
         .catch((error) => {  // エラーコードが返ってきた場合
           console.log(error);  // エラーコードを表示
