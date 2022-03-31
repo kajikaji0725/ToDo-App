@@ -1,14 +1,15 @@
-FROM node:14
+FROM node:16 as build
 
-WORKDIR /app
+RUN yarn global add serve
 
-COPY package.json .
-COPY package-lock.json .
+WORKDIR /work
 
-RUN npm install
+COPY package.json /work
+COPY package-lock.json /work
 
-COPY . .
+RUN yarn install
 
-EXPOSE 3000
+COPY . /work
+RUN yarn build
 
-CMD [ "yarn", "start" ]
+ENTRYPOINT [ "serve", "-s", "build", "-p", "5000" ]
