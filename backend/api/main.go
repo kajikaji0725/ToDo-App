@@ -12,7 +12,7 @@ import (
 
 func main() {
 	c := cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://localhost"},
+		AllowedOrigins:   []string{"http://localhost:5000"},
 		AllowCredentials: false,
 		AllowedMethods:   []string{"GET", "POST", "HEAD"},
 		AllowedHeaders:   []string{"Content-type"},

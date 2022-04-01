@@ -3,7 +3,7 @@ services:
   api:
     build:
       context: backend
-      dockerfile: /api/Dockerfile
+      dockerfile: ./api/Dockerfile
     container_name: homework-api
     restart: always
     depends_on:
