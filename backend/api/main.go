@@ -14,7 +14,7 @@ func main() {
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:5000"},
 		AllowCredentials: false,
-		AllowedMethods:   []string{"GET", "POST", "HEAD","DELETE"},
+		AllowedMethods:   []string{"GET", "POST", "HEAD","DELETE","PUT"},
 		AllowedHeaders:   []string{"Content-type"},
 		MaxAge:           24 * int(time.Hour),
 	})

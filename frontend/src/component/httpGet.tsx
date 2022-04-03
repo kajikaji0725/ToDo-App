@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import axis from 'axios';
 import { Homework, HomeworkDetail } from './interface';
 import { ReactDOM } from 'react';
+import { Context } from './home';
 
 const HttpGet = () => {
-    const [array, setArray] = useState<HomeworkDetail[]>([]);
+    //const [array, setArray] = useState<HomeworkDetail[]>([]);
+    const {array,setArray} = useContext(Context);
     const axios = axis.create({ baseURL: "http://localhost:8081" })
     const getHomework = () => {
         axios

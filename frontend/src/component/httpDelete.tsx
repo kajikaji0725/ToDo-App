@@ -1,10 +1,13 @@
 import axis from 'axios'
-import { ChangeEvent } from 'react'
+import { ChangeEvent, useContext } from 'react'
+import { Context } from './home'
 
 const HttpDelete = () => {
     const axios = axis.create({ baseURL: "http://localhost:8081" })
 
     var deleteId: string
+
+    const { array, setArray } = useContext(Context);
 
     const setDeleteId = (event: ChangeEvent<HTMLInputElement>) => {
         deleteId = event.target.value;
@@ -12,7 +15,10 @@ const HttpDelete = () => {
 
     const deleteHomework = () => {
         console.log(deleteId)
-        axios.delete('/todo/'+deleteId).then((res) => {
+        axios.delete('/todo/' + deleteId).then((res) => {
+            const index = array.findIndex((arr) => arr.id === deleteId);
+            array.splice(index,1);
+            setArray([...array])
             console.log(res)
         }).catch((error) => {
             console.log(error)
