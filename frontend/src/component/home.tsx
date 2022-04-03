@@ -1,52 +1,30 @@
-import { FC, useState, useEffect } from 'react';
-import proxy from 'http-proxy-middleware'
-import axis from 'axios';
-import { SampleType } from './interface';
+import HttpGet from "./httpGet";
+import HttpPost from "./httpPost";
+import { FC } from "react";
+import './../index.css'
+import HttpDelete from "./httpDelete";
+import HttpPut from "./httpPut";
 
-const Sample: FC = () => {
-  
-  const [info, setInfo] = useState<SampleType[]>([]);
-  const datas: SampleType[] = [];
-  console.log(axis.defaults.baseURL);
-  const axios = axis.create({baseURL: "http://localhost:8081"})
-  delete axios.defaults.headers.common["X-Requested-With"];
-
-  console.log(axis)
-  useEffect(() => {
-    const getSampleData = () => {
-      axios
-        .get("/todo")// GETメソッドを呼び出す
-        .then((res) => {  // レスポンスを受け取ったらthenを実行する
-          // GETで取得したデータをforEachでループしてStateにセットする
-          // res.data.forEach((resData:SampleType) => {
-          //   const data: SampleType = {
-          //     message: resData["message"],
-          //   };
-          //   datas.push(data);
-          // });
-          console.log(res)
-          console.log(res.data);
-          // for(let i=0; i<res.data.length;i++ ){
-          //   const data:SampleType= {
-          //     message: res[i].data["message"];
-          //   }
-          // }
-          // setInfo(datas);
-        })
-        .catch((error) => {  // エラーコードが返ってきた場合
-          console.log(error);  // エラーコードを表示
-        });
-      };
-
-    getSampleData();  // 関数を実行する
-  }, []);
-
+const Home: FC = () => {
   return (
     <>
-      // ここにTSX、もしくはJSXを記述する
+      <div className="box">
+        <HttpPost />
+      </div>
+
+      <div>
+        <HttpGet />
+      </div>
+
+      <div>
+        <HttpDelete />
+      </div>
+      
+      <div>
+        <HttpPut />
+      </div>
     </>
   )
 };
 
-
-export default Sample;
+export default Home;

@@ -1,12 +1,12 @@
 import ReactDOM from 'react-dom';
 import './index.css';
-import Sample from './component/home';
+import Home from './component/home';
 
 
 const hoho = <div>hogehohgeo</div>;
 
 ReactDOM.render(
-  <Sample />,
+  <Home />,
   document.getElementById('root')
 );
 
