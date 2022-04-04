@@ -1,41 +1,35 @@
 import HttpGet from "./httpGet";
 import HttpPost from "./httpPost";
-import { ContextType, createContext, FC, useState } from "react";
+import { useState } from "react";
 import './../index.css'
 import HttpDelete from "./httpDelete";
 import HttpPut from "./httpPut";
 import { HomeworkDetail } from "./interface";
 
-export const Context = createContext({} as {
-  array: HomeworkDetail[],
-  setArray: React.Dispatch<React.SetStateAction<HomeworkDetail[]>>
-});
 
-const Home: FC = () => {
+
+const Home: React.VFC = () => {
+  const onRequested = (newArray: HomeworkDetail[]) => {
+    setArray([...newArray]);  // newArray を渡すと state が更新されない(詳しい説明は忘れたけど、調べればすぐ出てくると思う)
+  }
   const [array, setArray] = useState<HomeworkDetail[]>([]);
-  // const arrayList = {
-  //   array,
-  //   setArray,
-  // };
   return (
     <>
-      <Context.Provider value={{ array, setArray }}>
-        <div className="box">
-          <HttpPost />
-        </div>
+      <div className="box">
+        <HttpPost />
+      </div>
 
-        <div>
-          <HttpGet />
-        </div>
+      <div>
+        <HttpGet array={array} onRequested={onRequested} />
+      </div>
 
-        <div>
-          <HttpDelete />
-        </div>
+      <div>
+        <HttpDelete array={array} onRequested={onRequested} />
+      </div>
 
-        <div className="box">
-          <HttpPut />
-        </div>
-      </Context.Provider>
+      <div className="box">
+        <HttpPut array={array} onRequested={onRequested} />
+      </div>
     </>
 
   )

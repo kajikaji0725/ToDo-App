@@ -85,6 +85,7 @@ func (api *ApiClient) updateHomework(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "json parsing error", 400)
 		return
 	}
+	homework.Date.Local()
 	err := api.db.UpdateDBHomework(&homework, id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

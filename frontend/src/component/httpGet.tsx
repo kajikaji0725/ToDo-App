@@ -1,45 +1,47 @@
-import { useContext, useState } from 'react';
 import axis from 'axios';
+import { useState } from 'react';
+import { arrayBuffer } from 'stream/consumers';
 import { Homework, HomeworkDetail } from './interface';
-import { ReactDOM } from 'react';
-import { Context } from './home';
 
-const HttpGet = () => {
-    //const [array, setArray] = useState<HomeworkDetail[]>([]);
-    const {array,setArray} = useContext(Context);
+const HttpGet = (props: {
+    array: HomeworkDetail[];
+    onRequested: (newArray: HomeworkDetail[]) => void
+}) => {
     const axios = axis.create({ baseURL: "http://localhost:8081" })
-    const getHomework = () => {
+    const handleGetHomework = () => {
         axios
             .get<Homework[]>("/todo")// GETメソッドを呼び出す
             .then((res) => {  // レスポンスを受け取ったらthenを実行する
 
-                for (var i = 0; i < res.data.length; i++) {
-                    if (array.some((arr) => arr.id === res.data[i].Homework.id)) {
+                const datas: HomeworkDetail[] = props.array;
+
+                for (const item of res.data) {
+                    console.log(typeof (item.homework.date))
+                    if (props.array.some((arr) => arr.id === item.homework.id)) {
                         continue;
                     }
-                    const id = res.data[i].Homework.id
-                    const subject = res.data[i].Homework.subject
-                    const date = res.data[i].Homework.date
+                    const { id, subject, date } = item.homework
                     const homework: HomeworkDetail = {
                         id: id,
                         subject: subject,
                         date: date
                     }
-                    array.push(homework);
-                }
-                setArray([...array]);
-                console.log(array);
-            })
 
+                    datas.push(homework);
+                }
+
+                props.onRequested(datas);
+                console.log(props.array);
+            })
             .catch((error) => {  // エラーコードが返ってきた場合
                 console.log(error);  // エラーコードを表示
             });
     };
     return (
         <>
-            <button onClick={getHomework}>データを更新！</button>
+            <button onClick={handleGetHomework}>データを取得！</button>
             <p>
-                {array.map((arr: HomeworkDetail) => (
+                {props.array.map((arr: HomeworkDetail) => (
                     <li>{arr.id} {arr.subject} {arr.date}</li>
                 ))}
             </p>

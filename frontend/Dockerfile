@@ -4,8 +4,7 @@ RUN yarn global add serve
 
 WORKDIR /work
 
-COPY package.json /work
-COPY package-lock.json /work
+COPY package.json yarn.lock /work/
 
 RUN yarn install
 

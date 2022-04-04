@@ -1,10 +1,10 @@
 export interface HomeworkDetail {
   id: string,
   subject: string,
-  date: string
+  date: Date
 };
 
 export interface Homework {
-  Homework: HomeworkDetail
-  ID: number
+  homework: HomeworkDetail
+  id: number
 };

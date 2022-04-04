@@ -3,7 +3,7 @@ services:
   api:
     build:
       context: backend
-      dockerfile: ./api/Dockerfile
+      dockerfile: ./Dockerfile
     container_name: homework-api
     restart: always
     depends_on:
@@ -26,6 +26,6 @@ services:
   front:
     build:
       context: frontend
-      dockerfile: Dockerfile
+      dockerfile: ./Dockerfile
     ports:
       - "5000:5000"
