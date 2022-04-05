@@ -1,15 +1,18 @@
 import { ChangeEvent, useContext } from "react";
-import { Context } from "./home";
 import axis from 'axios'
 import { HomeworkDetail } from "./interface";
 
-const HttpPut = () => {
+const HttpPut = (props:{
+  array: HomeworkDetail[];
+  onRequested: (newArray: HomeworkDetail[]) => void;
+}) => {
     const axios = axis.create({ baseURL: "http://localhost:8081" })
-    const { array, setArray } = useContext(Context);
     var changeID: string
     var updateID: string
     var updateSubject: string
     var updateDate: string
+
+    const datas:HomeworkDetail[] = [...props.array];
 
     const headers = {
         'Content-Type': 'application/json'
@@ -20,7 +23,7 @@ const HttpPut = () => {
     }
 
     const judgChangeID = () => {
-        if (array.findIndex((arr) => arr.id === changeID) === -1) {
+        if (datas.findIndex((arr) => arr.id === changeID) === -1) {
             alert("そのidは存在しないよ!!");
         } else {
             alert("id見つけた!!");
@@ -47,11 +50,11 @@ const HttpPut = () => {
         }
         axios.put<HomeworkDetail>('/todo/' + changeID, updateHomework, { headers: headers }).then((res) => {
             console.log(res);
-            const index = array.findIndex((arr) => arr.id === changeID);
-            array[index].id = updateID;
-            array[index].subject = updateSubject;
-            array[index].date = updateDate;
-            setArray([...array]);
+            const index = datas.findIndex((arr) => arr.id === changeID);
+            datas[index].id = updateID;
+            datas[index].subject = updateSubject;
+            datas[index].date = updateDate;
+            props.onRequested(datas);
         }).catch((error) => {
             console.log(error);
         });

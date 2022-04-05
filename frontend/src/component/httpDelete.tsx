@@ -1,24 +1,26 @@
 import axis from 'axios'
-import { ChangeEvent, useContext } from 'react'
-import { Context } from './home'
+import { ChangeEvent } from 'react'
+import { HomeworkDetail } from './interface';
 
-const HttpDelete = () => {
+const HttpDelete = (props: {
+  array: HomeworkDetail[];
+  onRequested: (newArray: HomeworkDetail[]) => void;
+}) =>  {
     const axios = axis.create({ baseURL: "http://localhost:8081" })
 
     var deleteId: string
-
-    const { array, setArray } = useContext(Context);
 
     const setDeleteId = (event: ChangeEvent<HTMLInputElement>) => {
         deleteId = event.target.value;
     }
 
     const deleteHomework = () => {
+        const datas:HomeworkDetail[] = [...props.array];
         console.log(deleteId)
         axios.delete('/todo/' + deleteId).then((res) => {
-            const index = array.findIndex((arr) => arr.id === deleteId);
-            array.splice(index,1);
-            setArray([...array])
+            const index = datas.findIndex((arr) => arr.id === deleteId);
+            datas.splice(index,1);
+            props.onRequested(datas)
             console.log(res)
         }).catch((error) => {
             console.log(error)

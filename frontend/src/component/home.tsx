@@ -6,36 +6,31 @@ import HttpDelete from "./httpDelete";
 import HttpPut from "./httpPut";
 import { HomeworkDetail } from "./interface";
 
-export const Context = createContext({} as {
-  array: HomeworkDetail[],
-  setArray: React.Dispatch<React.SetStateAction<HomeworkDetail[]>>
-});
 
 const Home: FC = () => {
   const [array, setArray] = useState<HomeworkDetail[]>([]);
-  // const arrayList = {
-  //   array,
-  //   setArray,
-  // };
+
+  const onRequested = (newArray:HomeworkDetail[]) => {
+    setArray([...newArray]);
+  }
+ 
   return (
     <>
-      <Context.Provider value={{ array, setArray }}>
         <div className="box">
           <HttpPost />
         </div>
 
         <div>
-          <HttpGet />
+          <HttpGet array={array} onRequested={onRequested}/>
         </div>
 
         <div>
-          <HttpDelete />
+          <HttpDelete array={array} onRequested={onRequested}/>
         </div>
 
         <div className="box">
-          <HttpPut />
+          <HttpPut array={array} onRequested={onRequested}/>
         </div>
-      </Context.Provider>
     </>
 
   )
