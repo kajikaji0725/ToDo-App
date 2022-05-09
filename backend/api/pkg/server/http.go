@@ -33,6 +33,7 @@ func (api *ApiClient) fetchSinglehHomework(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "invalid_id"})
 		c.Abort()
+		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
@@ -47,12 +48,14 @@ func (api *ApiClient) setHomework(c *gin.Context) {
 	err := c.ShouldBindJSON(&homework)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "JsonParse_error"})
+		return
 	}
 
 	err = api.db.SetDBHomework(&homework)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "error of setting db"})
 		c.Abort()
+		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
@@ -69,6 +72,7 @@ func (api *ApiClient) deleteHomework(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "error of delet db"})
 		c.Abort()
+		return
 	}
 
 	c.String(http.StatusOK, "Id number %s has been deleted", id)
