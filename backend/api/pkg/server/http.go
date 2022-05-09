@@ -1,13 +1,47 @@
+// package server
+
+// import (
+// 	"encoding/json"
+// 	"fmt"
+// 	"io/ioutil"
+// 	"log"
+// 	"net/http"
+
+// 	"github.com/gorilla/mux"
+// 	"github.com/kajikaji0725/ToDo-App/api/pkg/db"
+// 	"github.com/kajikaji0725/ToDo-App/api/pkg/db/model"
+// )
+
+// type ApiClient struct {
+// 	db *db.Controller
+// }
+
+// func NewApiClient(config *db.Config) (*ApiClient, error) {
+// 	controller, err := db.NewController(config)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	return &ApiClient{controller}, nil
+// }
+
+// func (api *ApiClient) NewRouter() *mux.Router {
+// 	router := mux.NewRouter()
+// 	router.HandleFunc("/todo/{id}", api.fetchSinglehHomework).Methods("GET")
+// 	router.HandleFunc("/todo", api.fetchAllHomework).Methods("GET")
+// 	router.HandleFunc("/todo", api.setHomework).Methods("POST").Headers("Content-Type", "application/json")
+// 	router.HandleFunc("/todo/{id}", api.deleteHomework).Methods("DELETE")
+// 	router.HandleFunc("/todo/{id}", api.updateHomework).Methods("PUT").Headers("Content-Type", "application/json")
+// 	return router
+// }
+
 package server
 
 import (
-	"encoding/json"
-	"fmt"
-	"io/ioutil"
-	"log"
 	"net/http"
+	"time"
 
-	"github.com/gorilla/mux"
+	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
 	"github.com/kajikaji0725/ToDo-App/api/pkg/db"
 	"github.com/kajikaji0725/ToDo-App/api/pkg/db/model"
 )
@@ -16,7 +50,137 @@ type ApiClient struct {
 	db *db.Controller
 }
 
-func NewApiClient(config *db.Config) (*ApiClient, error) {
+// func (api *ApiClient) fetchAllHomework(w http.ResponseWriter, r *http.Request) {
+// 	w.Header().Set("Content-type", "application/json")
+// 	log.Println("hogehogehoge")
+// 	homework, err := api.db.FetchDBHomework()
+// 	if err != nil {
+// 		log.Println(err)
+// 		http.Error(w, err.Error(), http.StatusInternalServerError)
+// 		return
+// 	}
+// 	json.NewEncoder(w).Encode(&homework)
+// }
+
+func (api *ApiClient) fetchAllHomework(c *gin.Context) {
+	homework, _ := api.db.FetchDBHomework()
+
+	for _, homeworkDetail := range homework {
+		c.JSON(http.StatusOK, gin.H{
+			"id":      homeworkDetail.Homework.Id,
+			"subject": homeworkDetail.Homework.Subject,
+			"date":    homeworkDetail.Homework.Date,
+		})
+	}
+}
+
+func (api *ApiClient) fetchSinglehHomework(c *gin.Context) {
+	id := c.Param("id")
+	homework, err := api.db.FetchDBSingleHomework(id)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "invalid_id"})
+		c.Abort()
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"id":      homework.Homework.Id,
+		"subject": homework.Homework.Subject,
+		"date":    homework.Homework.Date,
+	})
+}
+
+func (api *ApiClient) setHomework(c *gin.Context) {
+	var homework model.ToDo
+	err := c.BindJSON(&homework)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "JsonParse_error"})
+		c.Abort()
+	}
+
+	err = api.db.SetDBHomework(&homework)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "error of setting db"})
+		c.Abort()
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"id":      homework.Id,
+		"subject": homework.Subject,
+		"date":    homework.Date,
+	})
+}
+
+func (api *ApiClient) deleteHomework(c *gin.Context) {
+	id := c.Query("id")
+	err := api.db.DeleteDBHomework(id)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "error of delet db"})
+		c.Abort()
+	}
+
+	c.String(http.StatusOK, "Id number %s has been deleted", id)
+}
+
+// func (api *ApiClient) fetchSinglehHomework(w http.ResponseWriter, r *http.Request) {
+// 	vars := mux.Vars(r)
+// 	id := vars["id"]
+// 	w.Header().Set("Content-type", "application/json")
+// 	homework, err := api.db.FetchDBSingleHomework(id)
+// 	if err != nil {
+// 		http.Error(w, err.Error(), http.StatusInternalServerError)
+// 		return
+// 	}
+// 	json.NewEncoder(w).Encode(homework)
+// }
+
+// func (api *ApiClient) setHomework(w http.ResponseWriter, r *http.Request) {
+// 	resp, _ := ioutil.ReadAll(r.Body)
+// 	var homework model.ToDo
+// 	if err := json.Unmarshal(resp, &homework); err != nil {
+// 		http.Error(w, "json parsing error", http.StatusBadRequest)
+// 		return
+// 	}
+// 	err := api.db.SetDBHomework(&homework)
+// 	if err != nil {
+// 		log.Println(err)
+// 		http.Error(w, err.Error(), http.StatusInternalServerError)
+// 		return
+// 	}
+// 	json.NewEncoder(w).Encode(&homework)
+// }
+
+// func (api *ApiClient) deleteHomework(w http.ResponseWriter, r *http.Request) {
+// 	vars := mux.Vars(r)
+// 	id := vars["id"]
+
+// 	err := api.db.DeleteDBHomework(id)
+// 	if err != nil {
+// 		http.Error(w, err.Error(), http.StatusInternalServerError)
+// 		return
+// 	}
+// 	fmt.Fprintf(w, "Id number %s has been deleted", id)
+// }
+
+// func (api *ApiClient) updateHomework(w http.ResponseWriter, r *http.Request) {
+// 	vars := mux.Vars(r)
+// 	id := vars["id"]
+// 	resp, _ := ioutil.ReadAll(r.Body)
+// 	var homework model.ToDo
+// 	if err := json.Unmarshal(resp, &homework); err != nil {
+// 		http.Error(w, "json parsing error", 400)
+// 		return
+// 	}
+// 	err := api.db.UpdateDBHomework(&homework, id)
+// 	if err != nil {
+// 		http.Error(w, err.Error(), http.StatusInternalServerError)
+// 		return
+// 	}
+// 	fmt.Fprintf(w, "Id number %s has been updated", id)
+// }
+
+func NewController(config *db.Config) (*ApiClient, error) {
 	controller, err := db.NewController(config)
 	if err != nil {
 		return nil, err
@@ -24,81 +188,36 @@ func NewApiClient(config *db.Config) (*ApiClient, error) {
 	return &ApiClient{controller}, nil
 }
 
-func (api *ApiClient) fetchAllHomework(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-type", "application/json")
-	log.Println("hogehogehoge")
-	homework, err := api.db.FetchDBHomework()
-	if err != nil {
-		log.Println(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	json.NewEncoder(w).Encode(&homework)
-}
+func (api *ApiClient) NewRouter() *gin.Engine {
+	router := gin.Default()
 
-func (api *ApiClient) fetchSinglehHomework(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	id := vars["id"]
-	w.Header().Set("Content-type", "application/json")
-	homework, err := api.db.FetchDBSingleHomework(id)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	json.NewEncoder(w).Encode(homework)
-}
+	router.Use(cors.New(cors.Config{
+		AllowOrigins: []string{
+			"http://localhost:8080",
+			"http://localhost:8081",
+		},
+		AllowMethods: []string{
+			"GET",
+			"POST",
+			"DELETE",
+			"PUT",
+			"HEAD",
+		},
+		AllowHeaders: []string{
+			"Content-Type",
+		},
+		AllowCredentials: false,
 
-func (api *ApiClient) setHomework(w http.ResponseWriter, r *http.Request) {
-	resp, _ := ioutil.ReadAll(r.Body)
-	var homework model.ToDo
-	if err := json.Unmarshal(resp, &homework); err != nil {
-		http.Error(w, "json parsing error", http.StatusBadRequest)
-		return
-	}
-	err := api.db.SetDBHomework(&homework)
-	if err != nil {
-		log.Println(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	json.NewEncoder(w).Encode(&homework)
-}
+		MaxAge: 24 * time.Hour,
+	}))
 
-func (api *ApiClient) deleteHomework(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	id := vars["id"]
+	router.GET("/", func(c *gin.Context) {
+		c.String(http.StatusOK, "welcom to my To-Do App!!!")
+	})
+	router.GET("/todo", api.fetchAllHomework)
+	router.GET("/todo/:id", api.fetchSinglehHomework)
+	router.POST("/todo", api.setHomework)
+	router.DELETE("/todo/:id", api.deleteHomework)
 
-	err := api.db.DeleteDBHomework(id)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	fmt.Fprintf(w, "Id number %s has been deleted", id)
-}
-
-func (api *ApiClient) updateHomework(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	id := vars["id"]
-	resp, _ := ioutil.ReadAll(r.Body)
-	var homework model.ToDo
-	if err := json.Unmarshal(resp, &homework); err != nil {
-		http.Error(w, "json parsing error", 400)
-		return
-	}
-	err := api.db.UpdateDBHomework(&homework, id)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	fmt.Fprintf(w, "Id number %s has been updated", id)
-}
-
-func (api *ApiClient) NewRouter() *mux.Router {
-	router := mux.NewRouter()
-	router.HandleFunc("/todo/{id}", api.fetchSinglehHomework).Methods("GET")
-	router.HandleFunc("/todo", api.fetchAllHomework).Methods("GET")
-	router.HandleFunc("/todo", api.setHomework).Methods("POST").Headers("Content-Type", "application/json")
-	router.HandleFunc("/todo/{id}", api.deleteHomework).Methods("DELETE")
-	router.HandleFunc("/todo/{id}", api.updateHomework).Methods("PUT").Headers("Content-Type", "application/json")
 	return router
 }
