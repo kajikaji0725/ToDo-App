@@ -1,39 +1,3 @@
-// package server
-
-// import (
-// 	"encoding/json"
-// 	"fmt"
-// 	"io/ioutil"
-// 	"log"
-// 	"net/http"
-
-// 	"github.com/gorilla/mux"
-// 	"github.com/kajikaji0725/ToDo-App/api/pkg/db"
-// 	"github.com/kajikaji0725/ToDo-App/api/pkg/db/model"
-// )
-
-// type ApiClient struct {
-// 	db *db.Controller
-// }
-
-// func NewApiClient(config *db.Config) (*ApiClient, error) {
-// 	controller, err := db.NewController(config)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	return &ApiClient{controller}, nil
-// }
-
-// func (api *ApiClient) NewRouter() *mux.Router {
-// 	router := mux.NewRouter()
-// 	router.HandleFunc("/todo/{id}", api.fetchSinglehHomework).Methods("GET")
-// 	router.HandleFunc("/todo", api.fetchAllHomework).Methods("GET")
-// 	router.HandleFunc("/todo", api.setHomework).Methods("POST").Headers("Content-Type", "application/json")
-// 	router.HandleFunc("/todo/{id}", api.deleteHomework).Methods("DELETE")
-// 	router.HandleFunc("/todo/{id}", api.updateHomework).Methods("PUT").Headers("Content-Type", "application/json")
-// 	return router
-// }
-
 package server
 
 import (
@@ -49,18 +13,6 @@ import (
 type ApiClient struct {
 	db *db.Controller
 }
-
-// func (api *ApiClient) fetchAllHomework(w http.ResponseWriter, r *http.Request) {
-// 	w.Header().Set("Content-type", "application/json")
-// 	log.Println("hogehogehoge")
-// 	homework, err := api.db.FetchDBHomework()
-// 	if err != nil {
-// 		log.Println(err)
-// 		http.Error(w, err.Error(), http.StatusInternalServerError)
-// 		return
-// 	}
-// 	json.NewEncoder(w).Encode(&homework)
-// }
 
 func (api *ApiClient) fetchAllHomework(c *gin.Context) {
 	homework, _ := api.db.FetchDBHomework()
@@ -92,10 +44,9 @@ func (api *ApiClient) fetchSinglehHomework(c *gin.Context) {
 
 func (api *ApiClient) setHomework(c *gin.Context) {
 	var homework model.ToDo
-	err := c.BindJSON(&homework)
+	err := c.ShouldBindJSON(&homework)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "JsonParse_error"})
-		c.Abort()
 	}
 
 	err = api.db.SetDBHomework(&homework)
@@ -112,7 +63,7 @@ func (api *ApiClient) setHomework(c *gin.Context) {
 }
 
 func (api *ApiClient) deleteHomework(c *gin.Context) {
-	id := c.Query("id")
+	id := c.Param("id")
 	err := api.db.DeleteDBHomework(id)
 
 	if err != nil {
@@ -122,63 +73,6 @@ func (api *ApiClient) deleteHomework(c *gin.Context) {
 
 	c.String(http.StatusOK, "Id number %s has been deleted", id)
 }
-
-// func (api *ApiClient) fetchSinglehHomework(w http.ResponseWriter, r *http.Request) {
-// 	vars := mux.Vars(r)
-// 	id := vars["id"]
-// 	w.Header().Set("Content-type", "application/json")
-// 	homework, err := api.db.FetchDBSingleHomework(id)
-// 	if err != nil {
-// 		http.Error(w, err.Error(), http.StatusInternalServerError)
-// 		return
-// 	}
-// 	json.NewEncoder(w).Encode(homework)
-// }
-
-// func (api *ApiClient) setHomework(w http.ResponseWriter, r *http.Request) {
-// 	resp, _ := ioutil.ReadAll(r.Body)
-// 	var homework model.ToDo
-// 	if err := json.Unmarshal(resp, &homework); err != nil {
-// 		http.Error(w, "json parsing error", http.StatusBadRequest)
-// 		return
-// 	}
-// 	err := api.db.SetDBHomework(&homework)
-// 	if err != nil {
-// 		log.Println(err)
-// 		http.Error(w, err.Error(), http.StatusInternalServerError)
-// 		return
-// 	}
-// 	json.NewEncoder(w).Encode(&homework)
-// }
-
-// func (api *ApiClient) deleteHomework(w http.ResponseWriter, r *http.Request) {
-// 	vars := mux.Vars(r)
-// 	id := vars["id"]
-
-// 	err := api.db.DeleteDBHomework(id)
-// 	if err != nil {
-// 		http.Error(w, err.Error(), http.StatusInternalServerError)
-// 		return
-// 	}
-// 	fmt.Fprintf(w, "Id number %s has been deleted", id)
-// }
-
-// func (api *ApiClient) updateHomework(w http.ResponseWriter, r *http.Request) {
-// 	vars := mux.Vars(r)
-// 	id := vars["id"]
-// 	resp, _ := ioutil.ReadAll(r.Body)
-// 	var homework model.ToDo
-// 	if err := json.Unmarshal(resp, &homework); err != nil {
-// 		http.Error(w, "json parsing error", 400)
-// 		return
-// 	}
-// 	err := api.db.UpdateDBHomework(&homework, id)
-// 	if err != nil {
-// 		http.Error(w, err.Error(), http.StatusInternalServerError)
-// 		return
-// 	}
-// 	fmt.Fprintf(w, "Id number %s has been updated", id)
-// }
 
 func NewController(config *db.Config) (*ApiClient, error) {
 	controller, err := db.NewController(config)
