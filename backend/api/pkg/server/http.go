@@ -31,7 +31,7 @@ func (api *ApiClient) fetchSinglehHomework(c *gin.Context) {
 	homework, err := api.db.FetchDBSingleHomework(id)
 
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "invalid_id"})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "invalid_id"})
 		c.Abort()
 		return
 	}
@@ -47,13 +47,13 @@ func (api *ApiClient) setHomework(c *gin.Context) {
 	var homework model.ToDo
 	err := c.ShouldBindJSON(&homework)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "JsonParse_error"})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "JsonParse_error"})
 		return
 	}
 
 	err = api.db.SetDBHomework(&homework)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "error of setting db"})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "error of setting db"})
 		c.Abort()
 		return
 	}
@@ -70,12 +70,29 @@ func (api *ApiClient) deleteHomework(c *gin.Context) {
 	err := api.db.DeleteDBHomework(id)
 
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "error of delet db"})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "error of delet db"})
 		c.Abort()
 		return
 	}
 
 	c.String(http.StatusOK, "Id number %s has been deleted", id)
+}
+
+func (api *ApiClient) updateHomework(c *gin.Context) {
+	id := c.Param("id")
+	var homework model.ToDo
+
+	err := c.ShouldBindJSON(&homework)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "JsonParse_error"})
+		return
+	}
+
+	err = api.db.UpdateDBHomework(&homework, id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to save to DataBase"})
+		return
+	}
 }
 
 func NewController(config *db.Config) (*ApiClient, error) {
@@ -116,6 +133,7 @@ func (api *ApiClient) NewRouter() *gin.Engine {
 	router.GET("/todo/:id", api.fetchSinglehHomework)
 	router.POST("/todo", api.setHomework)
 	router.DELETE("/todo/:id", api.deleteHomework)
+	router.PUT("/todo/:id", api.updateHomework)
 
 	return router
 }
