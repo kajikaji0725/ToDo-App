@@ -2,7 +2,6 @@ package main
 
 import (
 	"log"
-	"net/http"
 
 	"github.com/kajikaji0725/ToDo-App/api/pkg/db"
 	"github.com/kajikaji0725/ToDo-App/api/pkg/server"
@@ -16,12 +15,16 @@ func main() {
 		DBname:   "root",
 		Port:     "5432",
 	}
-	apiClient ,err := server.NewApiClient(&config)
-	router := apiClient.NewRouter()
+
+	apiClient, err := server.NewController(&config)
+
 	if err != nil {
 		log.Fatal(err)
 	}
-	if err := http.ListenAndServe(":8080", router); err != nil {
+
+	router := apiClient.NewRouter()
+
+	if err := router.Run(":8080"); err != nil {
 		log.Fatal(err)
 	}
 }
