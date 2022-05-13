@@ -1,12 +1,12 @@
 import { VFC } from "react";
+import { HomeworkDetail } from "../model/interface";
+import axis from 'axios'
 
-const Http: VFC = () => {
+const http = axis.create({
+  baseURL: 'http://localhost:8081',
+})
 
-    return (
-        <div>
-
-        </div>
-    )
+export const post = async (homeworkDetial:HomeworkDetail): Promise<HomeworkDetail> => {
+  const resp = await http.post<HomeworkDetail>('/todo',homeworkDetial);
+  return resp.data;
 }
-
-export default Http;
