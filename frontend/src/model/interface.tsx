@@ -1,10 +1,5 @@
-export interface HomeworkDetail {
+export interface Homework {
     id: number,
     subject: string,
     date: Date
-};
-
-export interface Homework {
-    Homework: HomeworkDetail
-    ID: number
 };

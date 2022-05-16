@@ -1,6 +1,7 @@
 package server
 
 import (
+	"log"
 	"net/http"
 	"time"
 
@@ -14,14 +15,50 @@ type ApiClient struct {
 	db *db.Controller
 }
 
+func (api *ApiClient) NewRouter() *gin.Engine {
+	router := gin.Default()
+
+	router.Use(cors.New(cors.Config{
+		AllowOrigins: []string{
+			"http://localhost:8080",
+			"http://localhost:8081",
+			"http://localhost:3000",
+		},
+		AllowMethods: []string{
+			"GET",
+			"POST",
+			"DELETE",
+			"PUT",
+			"HEAD",
+		},
+		AllowHeaders: []string{
+			"Content-Type",
+		},
+		AllowCredentials: false,
+
+		MaxAge: 24 * time.Hour,
+	}))
+
+	router.GET("/", func(c *gin.Context) {
+		c.String(http.StatusOK, "welcom to my To-Do App!!!")
+	})
+	router.GET("/todo", api.fetchAllHomework)
+	router.GET("/todo/:id", api.fetchSinglehHomework)
+	router.POST("/todo", api.setHomework)
+	router.DELETE("/todo/:id", api.deleteHomework)
+	router.PUT("/todo/:id", api.updateHomework)
+
+	return router
+}
+
 func (api *ApiClient) fetchAllHomework(c *gin.Context) {
 	homework, _ := api.db.FetchDBHomework()
 
 	for _, homeworkDetail := range homework {
 		c.JSON(http.StatusOK, gin.H{
-			"id":      homeworkDetail.Homework.Id,
-			"subject": homeworkDetail.Homework.Subject,
-			"date":    homeworkDetail.Homework.Date,
+			"id":      homeworkDetail.Id,
+			"subject": homeworkDetail.Subject,
+			"date":    homeworkDetail.Date,
 		})
 	}
 }
@@ -37,9 +74,9 @@ func (api *ApiClient) fetchSinglehHomework(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"id":      homework.Homework.Id,
-		"subject": homework.Homework.Subject,
-		"date":    homework.Homework.Date,
+		"id":      homework.Id,
+		"subject": homework.Subject,
+		"date":    homework.Date,
 	})
 }
 
@@ -50,6 +87,8 @@ func (api *ApiClient) setHomework(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "JsonParse_error"})
 		return
 	}
+
+	log.Println(homework.Date)
 
 	err = api.db.SetDBHomework(&homework)
 	if err != nil {
@@ -101,39 +140,4 @@ func NewController(config *db.Config) (*ApiClient, error) {
 		return nil, err
 	}
 	return &ApiClient{controller}, nil
-}
-
-func (api *ApiClient) NewRouter() *gin.Engine {
-	router := gin.Default()
-
-	router.Use(cors.New(cors.Config{
-		AllowOrigins: []string{
-			"http://localhost:8080",
-			"http://localhost:8081",
-		},
-		AllowMethods: []string{
-			"GET",
-			"POST",
-			"DELETE",
-			"PUT",
-			"HEAD",
-		},
-		AllowHeaders: []string{
-			"Content-Type",
-		},
-		AllowCredentials: false,
-
-		MaxAge: 24 * time.Hour,
-	}))
-
-	router.GET("/", func(c *gin.Context) {
-		c.String(http.StatusOK, "welcom to my To-Do App!!!")
-	})
-	router.GET("/todo", api.fetchAllHomework)
-	router.GET("/todo/:id", api.fetchSinglehHomework)
-	router.POST("/todo", api.setHomework)
-	router.DELETE("/todo/:id", api.deleteHomework)
-	router.PUT("/todo/:id", api.updateHomework)
-
-	return router
 }
