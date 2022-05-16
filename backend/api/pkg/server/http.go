@@ -54,13 +54,7 @@ func (api *ApiClient) NewRouter() *gin.Engine {
 func (api *ApiClient) fetchAllHomework(c *gin.Context) {
 	homework, _ := api.db.FetchDBHomework()
 
-	for _, homeworkDetail := range homework {
-		c.JSON(http.StatusOK, gin.H{
-			"id":      homeworkDetail.Id,
-			"subject": homeworkDetail.Subject,
-			"date":    homeworkDetail.Date,
-		})
-	}
+	c.JSON(http.StatusOK, &homework)
 }
 
 func (api *ApiClient) fetchSinglehHomework(c *gin.Context) {
