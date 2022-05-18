@@ -1,7 +1,6 @@
 import { Button, TextField } from "@mui/material";
 import { Box } from "@mui/system";
-import { GridSelectionModel } from "@mui/x-data-grid";
-import React, { MutableRefObject, useEffect, useState, VFC } from "react";
+import React, { useEffect, useState } from "react";
 import { httpPost, httpGet, httpDelete } from "../api/http";
 import { Homework } from "../model/interface";
 import Table from "./table";
@@ -9,25 +8,24 @@ import Table from "./table";
 const Home = () => {
 
   const [homework, setHomework] = useState<Homework[]>([]);
-
-  let id: number;
-  let subject: string;
-  let date: Date;
+  const [id,setID] = useState<number>(-1);
+  const [subject,setSubject] = useState<string>("");
+  const [date,setDate] = useState<Date>(new Date);
 
   const addID = (event: React.ChangeEvent<HTMLInputElement>) => {
-    id = Number(event.target.value);
+    setID(Number(event.target.value));
   }
 
   const addSubject = (event: React.ChangeEvent<HTMLInputElement>) => {
-    subject = event.target.value;
+    setSubject(event.target.value);
   }
 
   const addDate = (event: React.ChangeEvent<HTMLInputElement>) => {
-    date = new Date(event.target.value);
+    setDate(new Date(event.target.value));
     console.log(date);
   }
 
-  const deleteHomework = (rows:number[]) => {
+  const deleteHomework = (rows: number[]) => {
     let newHomework = homework;
     for (let homeworkID of rows) {
       newHomework = newHomework.filter(v => v.id !== homeworkID);
@@ -36,7 +34,7 @@ const Home = () => {
     setHomework([...newHomework]);
   }
 
-  async function httpGetHomework() {
+  const httpGetHomework = async () => {
     try {
       const newHomework = await httpGet();
       console.log(newHomework);
@@ -49,7 +47,8 @@ const Home = () => {
     }
   }
 
-  async function httpPostHomework() {
+  const httpPostHomework = async () => {
+
     let homework: Homework = {
       id: id,
       subject: subject,
@@ -64,7 +63,7 @@ const Home = () => {
     }
   }
 
-  async function httpDeleteHomework(id: number) {
+  const httpDeleteHomework = async (id: number) => {
     try {
       const resp = await httpDelete(id);
       console.log(resp);
@@ -72,8 +71,6 @@ const Home = () => {
       console.error(e);
     }
   }
-
-
 
   return (
     <Box
@@ -85,13 +82,13 @@ const Home = () => {
       autoComplete="off"
     >
       <div>
-        <TextField id="ii" label="id" placeholder="idはユニークだよ" onChange={addID} />
+        <TextField id="id" label="id" placeholder="idはユニークだよ" onChange={addID} />
       </div>
       <div>
-        <TextField id="hoge" label="Subject" placeholder="例 知能科学" onChange={addSubject} />
+        <TextField id="subject" label="Subject" placeholder="例 知能科学" onChange={addSubject} />
       </div>
       <div>
-        <TextField id="j" placeholder="期限" type="datetime-local" onChange={addDate} />
+        <TextField id="date" placeholder="期限" type="datetime-local" onChange={addDate} />
       </div>
       <Button
         variant="contained"

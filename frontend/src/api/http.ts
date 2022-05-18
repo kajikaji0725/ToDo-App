@@ -15,3 +15,4 @@ export const httpDelete = async (id: number): Promise<Homework> => {
   const resp = await http.delete<Homework>('/todo/' + `${id}`);
   return resp.data;
 }
+
