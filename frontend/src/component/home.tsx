@@ -1,21 +1,18 @@
 import { Button, TextField } from "@mui/material";
 import { Box } from "@mui/system";
-import React, { useEffect, useState, VFC } from "react";
-import { setTimeout } from "timers/promises";
-import { http } from "../api/axios";
-import { get, post } from "../api/http";
+import { GridSelectionModel } from "@mui/x-data-grid";
+import React, { MutableRefObject, useEffect, useState, VFC } from "react";
+import { httpPost, httpGet, httpDelete } from "../api/http";
 import { Homework } from "../model/interface";
 import Table from "./table";
 
 const Home = () => {
+
   const [homework, setHomework] = useState<Homework[]>([]);
 
   let id: number;
   let subject: string;
   let date: Date;
-
-  // useEffect(() => {
-  // }, [homework])
 
   const addID = (event: React.ChangeEvent<HTMLInputElement>) => {
     id = Number(event.target.value);
@@ -30,16 +27,53 @@ const Home = () => {
     console.log(date);
   }
 
-  const httpPost = () => {
+  const deleteHomework = (rows:number[]) => {
+    let newHomework = homework;
+    for (let homeworkID of rows) {
+      newHomework = newHomework.filter(v => v.id !== homeworkID);
+      httpDeleteHomework(homeworkID);
+    }
+    setHomework([...newHomework]);
+  }
+
+  async function httpGetHomework() {
+    try {
+      const newHomework = await httpGet();
+      console.log(newHomework);
+      setHomework([...newHomework]);
+
+      console.log(homework.length);
+
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
+  async function httpPostHomework() {
     let homework: Homework = {
       id: id,
       subject: subject,
       date: date
     };
 
-    const resp = post(homework);
-    console.log(resp);
+    try {
+      const resp = await httpPost(homework);
+      console.log(resp);
+    } catch (e) {
+      console.error(e);
+    }
   }
+
+  async function httpDeleteHomework(id: number) {
+    try {
+      const resp = await httpDelete(id);
+      console.log(resp);
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+
 
   return (
     <Box
@@ -62,30 +96,19 @@ const Home = () => {
       <Button
         variant="contained"
         color="primary"
-        onClick={httpPost}
+        onClick={httpPostHomework}
       >
         post
       </Button>
       <Button
         variant="contained"
         color="primary"
-        onClick={async () => {
-          try {
-            const newHomework = await get();
-            console.log(newHomework);
-            setHomework([...newHomework]);
-
-            console.log(homework.length);
-
-          } catch (e) {
-            console.log(e);
-          }
-        }}
+        onClick={httpGetHomework}
       >
         get
       </Button>
 
-      <Table todos={homework} />
+      <Table todos={homework} deleteHomework={deleteHomework} />
 
     </Box>
   )
