@@ -1,7 +1,7 @@
 import { Button, TextField } from "@mui/material";
 import { Box } from "@mui/system";
 import React, { useEffect, useState } from "react";
-import { httpPost, httpGet, httpDelete } from "../api/http";
+import { httpPost, httpGet, httpDelete,httpPut } from "../api/http";
 import { Homework } from "../model/interface";
 import Table from "./table";
 
@@ -32,6 +32,10 @@ const Home = () => {
       httpDeleteHomework(homeworkID);
     }
     setHomework([...newHomework]);
+  }
+
+  const putHomework = (newHomework: Homework) => {
+    
   }
 
   const httpGetHomework = async () => {
@@ -72,6 +76,15 @@ const Home = () => {
     }
   }
 
+  const httpPutHomework = async (newHomework: Homework) => {
+    try{
+      const resp = await httpPut(newHomework);
+      console.log(resp);
+    }catch(e){
+      console.error(e);
+    }
+  }
+
   return (
     <Box
       component="form"
@@ -88,7 +101,7 @@ const Home = () => {
         <TextField id="subject" label="Subject" placeholder="例 知能科学" onChange={addSubject} />
       </div>
       <div>
-        <TextField id="date" placeholder="期限" type="datetime-local" onChange={addDate} />
+        <TextField id="date" placeholder="期限" type="date" onChange={addDate} />
       </div>
       <Button
         variant="contained"
@@ -105,7 +118,7 @@ const Home = () => {
         get
       </Button>
 
-      <Table todos={homework} deleteHomework={deleteHomework} />
+      <Table todos={homework} deleteHomework={deleteHomework} putHomework={httpPutHomework}/>
 
     </Box>
   )
