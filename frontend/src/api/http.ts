@@ -16,7 +16,7 @@ export const httpDelete = async (id: number): Promise<Homework> => {
   return resp.data;
 }
 
-export const httpPut = async (homework:Homework): Promise<Homework> => {
-  const resp = await http.put<Homework>('/todo/' + `${homework.id}`);
+export const httpPut = async (homework: Homework): Promise<Homework> => {
+  const resp = await http.put<Homework>('/todo/' + `${homework.id}`, homework);
   return resp.data;
 }

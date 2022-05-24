@@ -1,16 +1,16 @@
 import { Button, TextField } from "@mui/material";
 import { Box } from "@mui/system";
 import React, { useEffect, useState } from "react";
-import { httpPost, httpGet, httpDelete,httpPut } from "../api/http";
+import { httpPost, httpGet, httpDelete, httpPut } from "../api/http";
 import { Homework } from "../model/interface";
 import Table from "./table";
 
 const Home = () => {
 
   const [homework, setHomework] = useState<Homework[]>([]);
-  const [id,setID] = useState<number>(-1);
-  const [subject,setSubject] = useState<string>("");
-  const [date,setDate] = useState<Date>(new Date);
+  const [id, setID] = useState<number>(-1);
+  const [subject, setSubject] = useState<string>("");
+  const [date, setDate] = useState<Date>(new Date);
 
   const addID = (event: React.ChangeEvent<HTMLInputElement>) => {
     setID(Number(event.target.value));
@@ -34,8 +34,26 @@ const Home = () => {
     setHomework([...newHomework]);
   }
 
-  const putHomework = (newHomework: Homework) => {
-    
+  const putHomework = (subject: Map<number, string>, date: Map<number, Date>) => {
+    let newHomework = homework;
+    const indexs = new Set();
+
+    subject.forEach((val, key) => {
+      const index = newHomework.findIndex((v) => v.id === key);
+      indexs.add(index);
+      newHomework[index]["subject"] = val;
+    })
+
+    date.forEach((val, key) => {
+      const index = newHomework.findIndex((v) => v.id === key);
+      indexs.add(index);
+      newHomework[index]["date"] = val;
+    })
+
+    indexs.forEach((value) =>
+      httpPutHomework(homework[Number(value)])
+    )
+    setHomework([...newHomework]);
   }
 
   const httpGetHomework = async () => {
@@ -43,8 +61,6 @@ const Home = () => {
       const newHomework = await httpGet();
       console.log(newHomework);
       setHomework([...newHomework]);
-
-      console.log(homework.length);
 
     } catch (e) {
       console.log(e);
@@ -77,10 +93,10 @@ const Home = () => {
   }
 
   const httpPutHomework = async (newHomework: Homework) => {
-    try{
+    try {
       const resp = await httpPut(newHomework);
       console.log(resp);
-    }catch(e){
+    } catch (e) {
       console.error(e);
     }
   }
@@ -118,7 +134,7 @@ const Home = () => {
         get
       </Button>
 
-      <Table todos={homework} deleteHomework={deleteHomework} putHomework={httpPutHomework}/>
+      <Table todos={homework} deleteHomework={deleteHomework} putHomework={putHomework} />
 
     </Box>
   )

@@ -7,24 +7,26 @@ import moment from "moment";
 const Table = (props: {
   todos: Homework[];
   deleteHomework: (homeworkID: number[]) => void;
-  putHomework: (newHomework:Homework) => void;
+  putHomework: (subject: Map<number, string>, date: Map<number, Date>) => void;
 }): JSX.Element => {
 
-  const dateFormat = (v:GridValueFormatterParams) => {
+  const dateFormat = (v: GridValueFormatterParams) => {
     return moment(v.value).format('YYYY-MM-DD HH:mm');
   }
 
   const [homeworkID, setHomeworkID] = useState<number[]>([]);
-  
-  const[newSubject, setNewSubject] = useState<Map<number,string>>(
-    new Map<number,string>()
+
+  const [newSubject, setNewSubject] = useState<Map<number, string>>(
+    new Map<number, string>()
   );
-  const[newDate, setNewDate] = useState<Map<number,Date>>();
+  const [newDate, setNewDate] = useState<Map<number, Date>>(
+    new Map<number, Date>()
+  );
 
   const colums: GridColDef[] = [
     { field: 'id', headerName: 'ID', width: 150 },
     { field: 'subject', headerName: 'Subject', width: 150, editable: true },
-    { field: 'date', headerName: 'Date', width: 250, editable: true , valueFormatter: dateFormat},
+    { field: 'date', headerName: 'Date', width: 250, editable: true, valueFormatter: dateFormat },
   ];
 
   const delRows = () => {
@@ -33,32 +35,27 @@ const Table = (props: {
     props.deleteHomework(homeworkID);
   }
 
-  const chengeCell = (v:GridCellEditCommitParams) => {
-    if(v.field === "subject"){
-      console.log(v.value);
-      console.log(Number(v.id));
-      const map = new Map<number,string>();
-      map.set(Number(v.id.toString()),v.value);
-      setNewSubject(map);
-      console.log(map);
-      console.log(newSubject);
+  const chengeCell = (v: GridCellEditCommitParams) => {
+    const id = Number(v.id.toString());
+    if (v.field === "subject") {
+      const mapSubject = new Map<number, string>();
+      mapSubject.set(id, v.value);
+      setNewSubject(mapSubject);
     }
-    if(v.field === "date"){
-      setNewDate(newDate?.set(Number(v.id.toString), new Date(v.value.toString)));
+    if (v.field === "date") {
+      const date = new Date(v.value);
+      const mapDate = new Map<number, Date>();
+      mapDate.set(id, date);
+      setNewDate(mapDate);
     }
   }
 
   const updateHomework = () => {
-    if(newSubject?.size === undefined && newDate?.size === undefined) return;
-    
-    const homework = new Map<number,Homework>();
-    
-    if(newSubject?.size !== undefined){
-      for(const key of Object.keys(newSubject)){
-        console.log(key);
-      }
-    }
+    if (newSubject.size === 0 && newDate.size === 0) return;
+
+    props.putHomework(newSubject, newDate);
   }
+
 
   return (
     <div style={{ height: 500, width: '100%' }}>
