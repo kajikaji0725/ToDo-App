@@ -1,8 +1,8 @@
 import dayjs from "dayjs";
 import QueryString from "qs";
-import axis from 'axios'
+import axios from 'axios'
 
-export const http = axis.create({
+export const http = axios.create({
   baseURL: 'http://localhost:8081',
 })
 
